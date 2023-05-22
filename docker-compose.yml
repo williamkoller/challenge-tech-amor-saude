@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  node-tech-amor-saude:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-tech-amor-saude
+    entrypoint: sh -c 'yarn install --frozen-lockfile && yarn start:dev'
+    depends_on:
+      - postgres-tech-amor-saude
+    volumes:
+      - .:/app/
+      - /app/node_modules
+    ports:
+      - ${PORT}:${PORT}
+    networks:
+      - node-tech-net
+
+  postgres-tech-amor-saude:
+    image: postgres:latest
+    container_name: postgres-tech-amor-saude
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    networks:
+      - node-tech-net
+    volumes:
+      - postgres-tech-amor-saude-data:/var/lib/postgresql/data
+
+networks:
+  node-tech-net:
+
+volumes:
+  postgres-tech-amor-saude-data:
