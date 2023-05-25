@@ -4,10 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ModelNotFoundException } from './common/filters/model-not-found.exception.filter';
 import { HttpAllExceptionFilter } from './common/filters/http-all-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { swagger } from './docs/swagger';
 
 async function bootstrap() {
   const logger = new Logger('Main');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  swagger(app);
 
   const config = app.get<ConfigService>(ConfigService);
   const port = config.get<number>('PORT');

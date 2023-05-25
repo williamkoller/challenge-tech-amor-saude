@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCompanyDto } from './dtos/create-company.dto';
 import { UpdateCompanyDto } from './dtos/update-company.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,11 +28,17 @@ export class CompanyService {
   }
 
   async findAll() {
-    return await this.companyRepo.find();
+    const companies = await this.companyRepo.find();
+
+    if (!companies.length) {
+      throw new NotFoundException('No record found');
+    }
+
+    return companies;
   }
 
   async findOneById(id: number) {
-    return `This action returns a #${id} company`;
+    return await this.companyRepo.findOne({ where: { id } });
   }
 
   async findOneByName(name: string) {

@@ -9,5 +9,6 @@ import { BcryptAdapter } from 'src/shared/cryptography/bcrypt-adapter/bcrypt-ada
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [UserService, BcryptAdapter],
+  exports: [UserService],
 })
 export class UserModule {}
