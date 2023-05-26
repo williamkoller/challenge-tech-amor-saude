@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -18,23 +19,34 @@ export class UserService {
     private readonly bcryptAdapter: BcryptAdapter,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    const userExists = await this.findOneByEmail(createUserDto.email);
+    try {
+      return await this.userRepository.save({
+        ...createUserDto,
+        password: await this.bcryptAdapter.hash(createUserDto.password),
+      });
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(
+          `A user with that email: ${createUserDto.email} already exists`,
+        );
+      }
 
-    if (userExists) {
-      throw new ConflictException(
-        `A user with that email: ${createUserDto.email} already exists`,
-      );
+      throw new BadRequestException(error);
     }
-
-    return await this.userRepository.save({
-      ...createUserDto,
-      password: await this.bcryptAdapter.hash(createUserDto.password),
-    });
   }
 
-  async findAll() {
-    const users = await this.userRepository.find();
-    return users.length ? users : [];
+  async findAll(take: number, skip: number) {
+    const takeRequest = take || 10;
+    const skipRequest = skip || 0;
+
+    const [data, total] = await this.userRepository.findAndCount({
+      take: takeRequest,
+      skip: skipRequest,
+    });
+    return {
+      data,
+      total,
+    };
   }
 
   async findOneById(id: number) {
